@@ -5,11 +5,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException
 
-app = Flask(__name__, static_url_path='', static_folder='/opt/nauta/static')
+app = Flask(__name__, static_url_path='', static_folder='./static')
 
 @app.route('/')
 def root():
-    return send_from_directory('/opt/nauta/static', 'index.html')
+    return send_from_directory('./static', 'index.html')
 
 @app.route('/login', methods=['POST'])
 def login():
