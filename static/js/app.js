@@ -1,26 +1,26 @@
 /* ---------- helpers ---------- */
-async function ping(host, ms=2000){
+async function ping(host, ms=3000){
   const ctrl = new AbortController();
   const t    = setTimeout(()=>ctrl.abort(), ms);
   try{
-    await fetch(`https://${host}/favicon.ico`, {mode:'no-cors', signal:ctrl.signal});
+    await fetch(`${host}`, {mode:'no-cors', signal:ctrl.signal});
     clearTimeout(t); return true;
   }catch{ clearTimeout(t); return false;}
 }
 
 async function updateLed(){
-  const internet = await ping('8.8.8.8');
-  const portal   = await ping('secure.etecsa.net:8443');
+  let color = 'red';
+  const internet = await ping('https://8.8.8.8');
+  if(internet)
+    color = 'green';
+  else{
+    const portal   = await ping('https://secure.etecsa.net:8443');
+    if(portal)
+      color = 'grey';
+  }
   const led  = document.getElementById('led');
   const form = document.getElementById('loginForm');
-  
-  let color = 'red';
-  
-  if(internet)      
-    color = 'green';
-  else if(portal)   
-    color = 'grey';
-  
+    
   led.className = color;
   form.style.display = (color==='grey') ? 'block':'none';
 }
