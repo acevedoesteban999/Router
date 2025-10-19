@@ -9,49 +9,56 @@ async function ping(host, ms=3000){
 }
 
 async function updateLed(){
-  let color = 'red';
+  let color = 'bg-danger';
+  let container = 'no-network'
   const internet = await ping('https://8.8.8.8');
-  if(internet)
-    color = 'green';
+  if(internet){
+    color = 'bg-success';
+    container = 'network'
+  }
   else{
     const portal   = await ping('https://secure.etecsa.net:8443');
-    if(portal)
-      color = 'grey';
+    if(portal){
+      color = 'bg-secondary';
+      container = 'router'
+    }
   }
-  const led  = document.getElementById('led');
-  const form = document.getElementById('loginForm');
-    
-  led.className = color;
-  form.style.display = (color==='grey') ? 'block':'none';
+  el = document.getElementById(container)
+  el.className = el.className
+               .split(' ')
+               .filter(c => !c.startsWith('bg-'))
+               .join(' ');
+  el.classList.add(color);
+  
 }
 
 /* ---------- login ---------- */
-async function doLogin(){
-  const u = document.getElementById('user').value.trim();
-  const p = document.getElementById('pass').value.trim();
-  const msg = document.getElementById('msg');
-  if(!u||!p){msg.textContent='Complete campos';return;}
-  msg.textContent='Conectando...';
+// async function doLogin(){
+//   const u = document.getElementById('user').value.trim();
+//   const p = document.getElementById('pass').value.trim();
+//   const msg = document.getElementById('msg');
+//   if(!u||!p){msg.textContent='Complete campos';return;}
+//   msg.textContent='Conectando...';
 
-  const form = new FormData();
-  form.append('user', u);
-  form.append('pass', p);
+//   const form = new FormData();
+//   form.append('user', u);
+//   form.append('pass', p);
 
-  try{
-    const res = await fetch('/login', {method:'POST', body: form});
-    const data = await res.json();
-    if(data.ok){
-      msg.textContent='¡Conectado!';
-      setTimeout(()=>location.reload(),1500);
-    } else {
-      msg.textContent=data.error || 'Error desconocido';
-    }
-  }catch(e){
-    msg.textContent='Error de red';
-  }
-}
+//   try{
+//     const res = await fetch('/login', {method:'POST', body: form});
+//     const data = await res.json();
+//     if(data.ok){
+//       msg.textContent='¡Conectado!';
+//       setTimeout(()=>location.reload(),1500);
+//     } else {
+//       msg.textContent=data.error || 'Error desconocido';
+//     }
+//   }catch(e){
+//     msg.textContent='Error de red';
+//   }
+// }
 
-/* ---------- arranque ---------- */
-document.getElementById('btnSend').addEventListener('click', doLogin);
+// /* ---------- arranque ---------- */
+// document.getElementById('btnSend').addEventListener('click', doLogin);
 setInterval(updateLed, 5000);
 updateLed();
