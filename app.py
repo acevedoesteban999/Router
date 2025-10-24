@@ -8,6 +8,7 @@ from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash
+from ping import api_bp
 
 app = Flask(__name__, static_url_path='', static_folder='./static')
 
@@ -28,7 +29,9 @@ class AddUserForm(FlaskForm):
 
 @app.route('/')
 def root():
-    return send_from_directory('./templates', 'index.html')
+    users_db = User.query.all()
+    users = [{'id': u.id, 'username': u.username} for u in users_db]
+    return render_template('index.html', users = users)
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -79,16 +82,14 @@ def add_user():
         return redirect(url_for('login'))
     return render_template('add_user.html', form=form)
 
-@app.route('/api/users')
-def api_users():
-    users = User.query.all()
-    return jsonify([{'id': u.id, 'username': u.username} for u in users])
 
 
 
 
-with app.app_context():
-    db.create_all()
+
+app.register_blueprint(api_bp)
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     app.run(host='0.0.0.0', port=5000, debug=False)
