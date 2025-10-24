@@ -11,17 +11,20 @@ async function ping(host, ms=3000){
 async function updateLed(){
   let color = 'bg-danger';
   let container = 'no-network'
+  let form_class = 'd-none'
   const internet = await ping('https://8.8.8.8');
   if(internet){
     color = 'bg-success';
     container = 'network'
   }
   else{
-    const portal   = await ping('https://secure.etecsa.net:8443');
+    const portal = await ping('https://secure.etecsa.net:8443');
     if(portal){
       color = 'bg-secondary';
-      container = 'router'
+      container = 'router';
+      form_class = "d-block"
     }
+    
   }
   el = document.getElementById(container)
   el.className = el.className
@@ -29,36 +32,18 @@ async function updateLed(){
                .filter(c => !c.startsWith('bg-'))
                .join(' ');
   el.classList.add(color);
+  document.getElementById('loginForm').className = form_class
   
 }
 
-/* ---------- login ---------- */
-// async function doLogin(){
-//   const u = document.getElementById('user').value.trim();
-//   const p = document.getElementById('pass').value.trim();
-//   const msg = document.getElementById('msg');
-//   if(!u||!p){msg.textContent='Complete campos';return;}
-//   msg.textContent='Conectando...';
-
-//   const form = new FormData();
-//   form.append('user', u);
-//   form.append('pass', p);
-
-//   try{
-//     const res = await fetch('/login', {method:'POST', body: form});
-//     const data = await res.json();
-//     if(data.ok){
-//       msg.textContent='¡Conectado!';
-//       setTimeout(()=>location.reload(),1500);
-//     } else {
-//       msg.textContent=data.error || 'Error desconocido';
-//     }
-//   }catch(e){
-//     msg.textContent='Error de red';
-//   }
-// }
-
-// /* ---------- arranque ---------- */
-// document.getElementById('btnSend').addEventListener('click', doLogin);
 setInterval(updateLed, 5000);
 updateLed();
+
+
+async function loadUsers(){
+  const res = await fetch('/api/users');
+  const users = await res.json();
+  const sel = document.getElementById('userSelect');
+  sel.innerHTML = users.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
+}
+loadUsers();

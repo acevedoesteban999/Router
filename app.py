@@ -1,15 +1,34 @@
-from flask import Flask, send_from_directory, jsonify, request
-import os
+from flask import Flask, send_from_directory, jsonify, request ,render_template , redirect ,url_for
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException
+from flask_sqlalchemy import SQLAlchemy
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import DataRequired
+from flask_wtf import FlaskForm
+from werkzeug.security import generate_password_hash
 
 app = Flask(__name__, static_url_path='', static_folder='./static')
 
+app.config['SECRET_KEY'] = 'test12345'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+db = SQLAlchemy(app)
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(120), nullable=False)
+
+
+class AddUserForm(FlaskForm):
+    username = StringField('Usuario', validators=[DataRequired()])
+    password = PasswordField('Contraseña', validators=[DataRequired()])
+    submit = SubmitField('Guardar')
+
 @app.route('/')
 def root():
-    return send_from_directory('./static', 'index.html')
+    return send_from_directory('./templates', 'index.html')
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -48,6 +67,28 @@ def login():
         return jsonify(ok=False, error=str(e))
     finally:
         driver.quit()
+
+
+@app.route('/add_user', methods=['GET', 'POST'])
+def add_user():
+    form = AddUserForm()
+    if form.validate_on_submit():
+        hashed = generate_password_hash(form.password.data)
+        db.session.add(User(username=form.username.data, password_hash=hashed))
+        db.session.commit()
+        return redirect(url_for('login'))
+    return render_template('add_user.html', form=form)
+
+@app.route('/api/users')
+def api_users():
+    users = User.query.all()
+    return jsonify([{'id': u.id, 'username': u.username} for u in users])
+
+
+
+
+with app.app_context():
+    db.create_all()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
