@@ -10,29 +10,36 @@ async function ping(host, ms=3000){
 
 async function updateLed(){
   let color = 'bg-danger';
-  let container = 'no-network'
-  let form_class = 'd-none'
+  let containers = {
+    'no-network':'',
+    'network':'',
+    'router':''
+  }
+  let form_display = 'd-none'
   const internet = await ping('https://8.8.8.8');
   if(internet){
-    color = 'bg-success';
-    container = 'network'
+    containers['network'] = 'bg-success';
   }
   else{
     const portal = await ping('https://secure.etecsa.net:8443');
     if(portal){
-      color = 'bg-secondary';
-      container = 'router';
-      form_class = "d-block"
+      containers['router'] = 'bg-secondary';
+      form_display = "d-block"
     }
+    else
+      containers['no-network'] = 'bg-danger';
     
   }
-  el = document.getElementById(container)
-  el.className = el.className
+  Object.entries(containers).forEach(([tag, bgClass]) => {
+    let el = document.getElementById(tag)
+    el.className = el.className
                .split(' ')
                .filter(c => !c.startsWith('bg-'))
                .join(' ');
-  el.classList.add(color);
-  document.getElementById('loginForm').className = form_class
+    if (bgClass) el.classList.add(bgClass);
+  });
+  
+  document.getElementById('loginForm').className = form_display
   
 }
 
