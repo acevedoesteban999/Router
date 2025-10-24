@@ -89,7 +89,7 @@ updateLed();
 document.getElementById('btnConnect').addEventListener('click', async () => {
   const userId = document.getElementById('userSelect').value;
   if (!userId) { alert('Selecciona un usuario'); return; }
-
+  
   try {
     const res = await fetch('/login', {
       method: 'POST',

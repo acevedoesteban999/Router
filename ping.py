@@ -22,7 +22,7 @@ def bg_ping_loop():
         else:
             portal = loop.run_until_complete(_ping('https://secure.etecsa.net:8443'))
             status_info['status'] = 'router' if portal else 'no-network'
-        print(status_info)
+        #print(status_info)
         time.sleep(5)
 
 

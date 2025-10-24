@@ -19,7 +19,7 @@ db = SQLAlchemy(app)
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(120), nullable=False)
+    password = db.Column(db.String(120), nullable=False)
 
 
 class AddUserForm(FlaskForm):
@@ -29,17 +29,28 @@ class AddUserForm(FlaskForm):
 
 @app.route('/')
 def root():
-    users_db = User.query.all()
-    users = [{'id': u.id, 'username': u.username} for u in users_db]
+    try:
+        users_db = User.query.all()
+        users = [{'id': u.id, 'username': u.username} for u in users_db]
+    except:
+        users = []
     return render_template('index.html', users = users)
 
 @app.route('/login', methods=['POST'])
 def login():
-    user = request.form.get('user', '').strip()
-    pasw = request.form.get('pass', '').strip()
-    if not user or not pasw:
-        return jsonify(ok=False, error='Faltan datos')
+    data = request.get_json(silent=True) or {}
+    user_id_form = str(data.get('user_id', '')).strip()
+    if not user_id_form:
+        return jsonify(ok=False, error='No User in Request')
 
+    try:
+        user_id = int(user_id_form)
+        user = User.query.filter_by(id=user_id).first()
+        if not user:
+            return jsonify(ok=False, error='Usuario no encontrado')
+    except ValueError:
+        return jsonify(ok=False, error='ID inválido')
+    
     # Configurar Chrome headless
     chrome_options = Options()
     chrome_options.add_argument('--headless')
@@ -54,8 +65,8 @@ def login():
         driver.get("https://secure.etecsa.net:8443/")
 
         # Rellenar formulario
-        driver.find_element(By.ID, "username").send_keys(user)
-        driver.find_element(By.ID, "password").send_keys(pasw)
+        driver.find_element(By.ID, "username").send_keys(user.username)
+        driver.find_element(By.ID, "password").send_keys(user.password)
         driver.find_element(By.ID, "btnSubmit").click()
 
         # Esperar redirección o mensaje
@@ -76,10 +87,9 @@ def login():
 def add_user():
     form = AddUserForm()
     if form.validate_on_submit():
-        hashed = generate_password_hash(form.password.data)
-        db.session.add(User(username=form.username.data, password_hash=hashed))
+        db.session.add(User(username=form.username.data, password=form.password.data))
         db.session.commit()
-        return redirect(url_for('login'))
+        return redirect('/')
     return render_template('add_user.html', form=form)
 
 
@@ -87,9 +97,10 @@ def add_user():
 
 
 
+with app.app_context():
+    db.create_all()
+    
 app.register_blueprint(api_bp)
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(host='0.0.0.0', port=5000, debug=False)
