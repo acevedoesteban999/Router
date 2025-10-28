@@ -2,8 +2,11 @@ import os
 from flask import Blueprint,jsonify,request
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
+from webdriver_manager.firefox import GeckoDriverManager
 from selenium.common.exceptions import TimeoutException
+from .models import User
 
 api_selenium = Blueprint('selenium', __name__)
 
@@ -22,19 +25,19 @@ def login():
     except ValueError:
         return jsonify(ok=False, error='ID inválido')
     
-    # Configurar Chrome headless
-    driver_path = os.getenv('CHROMEDRIVER_PATH')
+    firefox_driver_path = os.getenv('FIREFOX_DRIVER_PATH')
+    gecodriver_path = os.getenv('GECODRIVER_PATH')
     sandbox = os.getenv('SANDBOX')
-    chrome_options = Options()
-    chrome_options.add_argument('--headless')
+    options = Options()
     if not sandbox:
-        chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    chrome_options.add_argument('--disable-gpu')
-
+        options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--disable-gpu')
+    options.binary_location = firefox_driver_path
     try:
-        service = webdriver.Chrome.service.Service(executable_path=driver_path) if driver_path else webdriver.chrome.service.Service()
-        driver = webdriver.Chrome(options=chrome_options,)
+        service = Service(executable_path=gecodriver_path)
+        driver  = webdriver.Firefox(service=service, options=options)
         
         driver.set_page_load_timeout(15)
         driver.get("https://secure.etecsa.net:8443/")
