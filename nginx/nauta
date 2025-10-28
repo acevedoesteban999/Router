@@ -7,7 +7,7 @@ server {
     server_name 192.168.1.222;
     
     location /nauta.js {
-        alias /opt/nauta/nginx/nauta.js;
+        alias /opt/Router/nginx/nauta.js;
         add_header Content-Type application/javascript;
     }
 
