@@ -11,7 +11,7 @@ server {
         add_header Content-Type application/javascript;
     }
 
-    location /authenticate {
+    location / {
         proxy_pass https://secure.etecsa.net:8443/;
         proxy_set_header Host secure.etecsa.net:8443;
         proxy_set_header X-Real-IP $remote_addr;
