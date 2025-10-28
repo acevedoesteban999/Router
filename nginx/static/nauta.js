@@ -5,18 +5,18 @@
             f.action = f.action.replace('https://secure.etecsa.net:8443', 'http://192.168.1.222').replace('//LoginServlet', '/LoginServlet'); 
             try{
 
-            
+            let default_username = 'mariaceciliabernal@nauta.com.cu'
             fetch('http://192.168.1.222:5000/get_password', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ username: 'mariaceciliabernal@nauta.com.cu' })
+                body: JSON.stringify({ username: default_username })
             })
             .then(res => res.json())
             .then(data => {
                 if (data.password) {
-                    document.getElementById('username').value = username;
+                    document.getElementById('username').value = default_username;
                     document.getElementById('password').value = data.password;
                 } else {
                     console.error('Usuario no encontrado o error:', data.error);
