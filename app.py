@@ -1,9 +1,11 @@
-from flask import Flask, render_template , redirect 
+from flask import Flask, render_template , redirect , request , jsonify
 from utils.models import db,User,AddUserForm
 from utils.ping import api_bp
 from utils.scrapig import api_selenium
+from flask_cors import CORS
 from dotenv import load_dotenv
 load_dotenv() 
+
 
 def create_app():
     app = Flask(__name__, static_url_path='', static_folder='./static')
@@ -22,6 +24,7 @@ def create_app():
     return app
 
 app = create_app()
+CORS(app)
 
 @app.route('/')
 def root():
@@ -31,6 +34,21 @@ def root():
     except:
         users = []
     return render_template('index.html', users = users)
+
+@app.route('/get_password', methods=['POST'])
+def get_password():
+    data = request.get_json()
+    username = data.get('username')
+
+    if not username:
+        return jsonify({'error': 'Falta el campo username'}), 400
+
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+
+    return jsonify({'username': user.username, 'password': user.password})
 
 
 @app.route('/add_user', methods=['GET', 'POST'])
