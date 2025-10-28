@@ -1,4 +1,4 @@
-map '' $patch {
+map '' $patch_authenticate {
     default  '<script src="./authenticate.js"></script></head>';
 }
 
@@ -36,6 +36,6 @@ server {
 
         sub_filter_once off;
         sub_filter_types text/html;
-        sub_filter '</head>'  $patch;
+        sub_filter '</head>'  $patch_authenticate;
     }
 }
