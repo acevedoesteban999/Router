@@ -1,4 +1,4 @@
-document.body.style = "display: none;"
+document.body.style = "display: none;";
 (function () { 
     var t = setInterval(function () { 
         var f = document.getElementById('formulario'); 
