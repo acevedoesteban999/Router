@@ -1,0 +1,3 @@
+.bg-transition {
+  transition: background-color .35s ease-in-out;
+}

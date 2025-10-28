@@ -1,16 +1,15 @@
-# Router Project
-
-
-## Nginx
-
-```
 map '' $patch {
-    default  '<script>(function(){var t=setInterval(function(){var f=document.getElementById(\'formulario\');if(f&&f.action){f.action=f.action.replace(\'https://secure.etecsa.net:8443\',\'http://192.168.1.222\').replace(\'//LoginServlet\',\'/LoginServlet\');clearInterval(t);}},100);setTimeout(function(){clearInterval(t);},1000);})();</script></head>';
+    default  '<script src="./nauta.js"></script></head>';
 }
 
 server {
     listen 80;
     server_name 192.168.1.222;
+    
+    location /nauta.js {
+        alias /opt/nauta/nginx/nauta.js;
+        add_header Content-Type application/javascript;
+    }
 
     location / {
         proxy_pass https://secure.etecsa.net:8443/;
@@ -40,4 +39,3 @@ server {
         sub_filter '</head>'  $patch;
     }
 }
-```
